@@ -45,7 +45,7 @@ unsigned int nStakeMinAge = 60 * 60 * 24 * 1;	// minimum age for coin age: 1d
 unsigned int nStakeMaxAge = 60 * 60 * 24 * 1000;	// stake age of full weight: 1000d
 unsigned int nStakeTargetSpacing = 20;			// 20 sec block spacing
 
-int64 nChainStartTime = 1422380406;
+int64 nChainStartTime = 1422431331;
 int nCoinbaseMaturity = 30;
 CBlockIndex* pindexGenesisBlock = NULL;
 int nBestHeight = -1;
@@ -2621,24 +2621,10 @@ bool LoadBlockIndex(bool fAllowNew)
         block.hashPrevBlock = 0;
         block.hashMerkleRoot = block.BuildMerkleTree();
         block.nVersion = 1;
-        block.nTime    = 1422380406;
+        block.nTime    = 1422431331;
         block.nBits    = bnProofOfWorkLimit.GetCompact();
-        block.nNonce   = 7118;
-        if (true  && (block.GetHash() != hashGenesisBlock)) {
-
-        // This will figure out a valid hash and Nonce if you're
-        // creating a different genesis block:
-            uint256 hashTarget = CBigNum().SetCompact(block.nBits).getuint256();
-            while (block.GetHash() > hashTarget)
-               {
-                   ++block.nNonce;
-                   if (block.nNonce == 0)
-                   {
-                       printf("NONCE WRAPPED, incrementing time");
-                       ++block.nTime;
-                   }
-               }
-        }
+        block.nNonce   = 1303049;
+ 
         //// debug print
         block.print();
         printf("block.GetHash() == %s\n", block.GetHash().ToString().c_str());
@@ -2646,7 +2632,7 @@ bool LoadBlockIndex(bool fAllowNew)
         printf("block.nTime = %u \n", block.nTime);
         printf("block.nNonce = %u \n", block.nNonce);
 
-        assert(block.hashMerkleRoot == uint256("e0a1002ea942cdd74d4066b15f9cb47439a2e667bbb3f58a4130cd11973f601a"));
+        assert(block.hashMerkleRoot == uint256("255359cb6632f863ba718637ab0e10fcb901cb954ed4e3ff708a34a8a1237276"));
 		assert(block.GetHash() == (!fTestNet ? hashGenesisBlock : hashGenesisBlockTestNet));
 
         // Start new block file
