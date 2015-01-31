@@ -45,7 +45,7 @@ unsigned int nStakeMinAge = 60 * 60 * 24 * 1;	// minimum age for coin age: 1d
 unsigned int nStakeMaxAge = 60 * 60 * 24 * 1000;	// stake age of full weight: 1000d
 unsigned int nStakeTargetSpacing = 20;			// 20 sec block spacing
 
-int64 nChainStartTime = 1422682025;
+int64 nChainStartTime = 1422697506;
 int nCoinbaseMaturity = 30;
 CBlockIndex* pindexGenesisBlock = NULL;
 int nBestHeight = -1;
@@ -1001,7 +1001,7 @@ int64 GetProofOfWorkReward(int nHeight, int64 nFees, uint256 prevHash)
 		nSubsidy = 5000000 * COIN;	
 		return nSubsidy + nFees;
 	}
-	else if(nHeight < 4320)
+	else if(nHeight < 10080)
 	{
 		nSubsidy = 1000 * COIN;	
 		return nSubsidy + nFees;
@@ -1012,7 +1012,7 @@ int64 GetProofOfWorkReward(int nHeight, int64 nFees, uint256 prevHash)
 
 // miner's coin stake reward based on nBits and coin age spent (coin-days)
 // simple algorithm, not depend on the diff
-const int DAILY_BLOCKCOUNT =  4320;	    // 1440 * 3
+const int DAILY_BLOCKCOUNT =  10080;	    // 1440 * 7
 int64 GetProofOfStakeReward(int64 nCoinAge, unsigned int nBits, unsigned int nTime, int nHeight)
 {
     int64 nRewardCoinYear;
@@ -2621,9 +2621,9 @@ bool LoadBlockIndex(bool fAllowNew)
         block.hashPrevBlock = 0;
         block.hashMerkleRoot = block.BuildMerkleTree();
         block.nVersion = 1;
-        block.nTime    = 1422682025;
+        block.nTime    = 1422697506;
         block.nBits    = bnProofOfWorkLimit.GetCompact();
-        block.nNonce   = 1587513;
+        block.nNonce   = 210962;
 
         //// debug print
         block.print();
@@ -2632,7 +2632,7 @@ bool LoadBlockIndex(bool fAllowNew)
         printf("block.nTime = %u \n", block.nTime);
         printf("block.nNonce = %u \n", block.nNonce);
 
-        assert(block.hashMerkleRoot == uint256("082bf858f0a526be95402321df2835df66e6a8a7418490febdc64fa663c08319"));
+        assert(block.hashMerkleRoot == uint256("a58b161893a06b77bb504b3d1fc1e3d62b4eed34756e151468d5d2c93c096787"));
 		assert(block.GetHash() == (!fTestNet ? hashGenesisBlock : hashGenesisBlockTestNet));
 
         // Start new block file
