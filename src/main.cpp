@@ -45,7 +45,7 @@ unsigned int nStakeMinAge = 60 * 60 * 24 * 1;	// minimum age for coin age: 1d
 unsigned int nStakeMaxAge = 60 * 60 * 24 * 1000;	// stake age of full weight: 1000d
 unsigned int nStakeTargetSpacing = 20;			// 20 sec block spacing
 
-int64 nChainStartTime = 1422380406;
+int64 nChainStartTime = 1422682025;
 int nCoinbaseMaturity = 30;
 CBlockIndex* pindexGenesisBlock = NULL;
 int nBestHeight = -1;
@@ -2608,7 +2608,7 @@ bool LoadBlockIndex(bool fAllowNew)
             return false;
 
         // Genesis block
-        const char* pszTimestamp = "YC TO DA MOON.";
+        const char* pszTimestamp = "IRC TO DA MOON.";
         CTransaction txNew;
         txNew.nTime = nChainStartTime;
         txNew.vin.resize(1);
@@ -2621,24 +2621,10 @@ bool LoadBlockIndex(bool fAllowNew)
         block.hashPrevBlock = 0;
         block.hashMerkleRoot = block.BuildMerkleTree();
         block.nVersion = 1;
-        block.nTime    = 1422380406;
+        block.nTime    = 1422682025;
         block.nBits    = bnProofOfWorkLimit.GetCompact();
-        block.nNonce   = 7118;
-        if (true  && (block.GetHash() != hashGenesisBlock)) {
+        block.nNonce   = 1587513;
 
-        // This will figure out a valid hash and Nonce if you're
-        // creating a different genesis block:
-            uint256 hashTarget = CBigNum().SetCompact(block.nBits).getuint256();
-            while (block.GetHash() > hashTarget)
-               {
-                   ++block.nNonce;
-                   if (block.nNonce == 0)
-                   {
-                       printf("NONCE WRAPPED, incrementing time");
-                       ++block.nTime;
-                   }
-               }
-        }
         //// debug print
         block.print();
         printf("block.GetHash() == %s\n", block.GetHash().ToString().c_str());
@@ -2646,7 +2632,7 @@ bool LoadBlockIndex(bool fAllowNew)
         printf("block.nTime = %u \n", block.nTime);
         printf("block.nNonce = %u \n", block.nNonce);
 
-        assert(block.hashMerkleRoot == uint256("e0a1002ea942cdd74d4066b15f9cb47439a2e667bbb3f58a4130cd11973f601a"));
+        assert(block.hashMerkleRoot == uint256("082bf858f0a526be95402321df2835df66e6a8a7418490febdc64fa663c08319"));
 		assert(block.GetHash() == (!fTestNet ? hashGenesisBlock : hashGenesisBlockTestNet));
 
         // Start new block file

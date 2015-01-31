@@ -32,15 +32,15 @@ static const unsigned int MAX_ORPHAN_TRANSACTIONS = MAX_BLOCK_SIZE/100;
 static const unsigned int MAX_INV_SZ = 50000;
 static const int64 MIN_TX_FEE = 1.0 * CENT;
 static const int64 MIN_RELAY_TX_FEE = 1.0 * CENT;
-static const int64 MAX_MONEY = 1000000000 * COIN;			// 1 bil
-static const int64 MAX_MINT_PROOF_OF_STAKE = 0.0365 * COIN;	// 3.65% annual interest
+static const int64 MAX_MONEY = 10000000 * COIN;			// 1 bil
+static const int64 MAX_MINT_PROOF_OF_STAKE = 0.01 * COIN;	// 1% annual interest
 static const int64 MIN_TXOUT_AMOUNT = MIN_TX_FEE;
 
 static const int POW_CUTOFF_BLOCK = 30240;
 
 inline bool MoneyRange(int64 nValue) { return (nValue >= 0 && nValue <= MAX_MONEY); }
 // Threshold for nLockTime: below this value it is interpreted as block number, otherwise as UNIX timestamp.
-static const unsigned int LOCKTIME_THRESHOLD = 500000000; // Tue Nov  5 00:53:20 1985 YC
+static const unsigned int LOCKTIME_THRESHOLD = 500000000; // Tue Nov  5 00:53:20 1985 IRC
 
 #ifdef USE_UPNP
 static const int fHaveUPnP = true;
@@ -48,8 +48,8 @@ static const int fHaveUPnP = true;
 static const int fHaveUPnP = false;
 #endif
 
-static const uint256 hashGenesisBlockOfficial("0x000000f3ea437e4694227366bd7060b181bfdb4945304267dd2f79bfeb6d51b1");
-static const uint256 hashGenesisBlockTestNet ("0x000000f3ea437e4694227366bd7060b181bfdb4945304267dd2f79bfeb6d51b1");
+static const uint256 hashGenesisBlockOfficial("0x00000861b91fd9a5b61d8ebd58e9a0b5149292c8e22154202684f3821b736299");
+static const uint256 hashGenesisBlockTestNet ("0x00000861b91fd9a5b61d8ebd58e9a0b5149292c8e22154202684f3821b736299");
 
 static const int64 nMaxClockDrift = 2 * 60 * 60;        // two hours
 
