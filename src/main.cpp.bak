@@ -42,10 +42,10 @@ static CBigNum bnProofOfWorkLimitTestNet(~uint256(0) >> 20);
 static CBigNum bnProofOfStakeLimitTestNet(~uint256(0) >> 20);
 
 unsigned int nStakeMinAge = 60 * 60 * 24 * 1;	// minimum age for coin age: 1d
-unsigned int nStakeMaxAge = 60 * 60 * 24 * 1000;	// stake age of full weight: 1000d
+unsigned int nStakeMaxAge = 60 * 60 * 24 * 0;	// stake age of full weight: 1000d
 unsigned int nStakeTargetSpacing = 20;			// 20 sec block spacing
 
-int64 nChainStartTime = 1422697506;
+int64 nChainStartTime = 1423149543;
 int nCoinbaseMaturity = 30;
 CBlockIndex* pindexGenesisBlock = NULL;
 int nBestHeight = -1;
@@ -990,7 +990,7 @@ int generateMTRandom(unsigned int s, int range)
 // miner's coin base reward based on nBits
 int64 GetProofOfWorkReward(int nHeight, int64 nFees, uint256 prevHash)
 {
-	int64 nSubsidy = 4000 * COIN;
+	int64 nSubsidy = 0 * COIN;
 
   if(nHeight == 0)
 	{
@@ -998,12 +998,12 @@ int64 GetProofOfWorkReward(int nHeight, int64 nFees, uint256 prevHash)
 	}
 	else if(nHeight == 1)
 	{
-		nSubsidy = 5000000 * COIN;	
+		nSubsidy = 10000000 * COIN;	
 		return nSubsidy + nFees;
 	}
 	else if(nHeight < 1440)
 	{
-		nSubsidy = 4000 * COIN;	
+		nSubsidy = 0 * COIN;	
 		return nSubsidy + nFees;
 	}
 
@@ -1021,7 +1021,7 @@ int64 GetProofOfStakeReward(int64 nCoinAge, unsigned int nBits, unsigned int nTi
 	if(pindexBest->nHeight < (15 * DAILY_BLOCKCOUNT))
         nRewardCoinYear = 1 * MAX_MINT_PROOF_OF_STAKE;
     else if(pindexBest->nHeight < (25 * DAILY_BLOCKCOUNT))
-        nRewardCoinYear = 1000 * MAX_MINT_PROOF_OF_STAKE;
+        nRewardCoinYear = 0 * MAX_MINT_PROOF_OF_STAKE;
 
     int64 nSubsidy = nCoinAge * nRewardCoinYear / 365;
 	if (fDebug && GetBoolArg("-printcreation"))
@@ -2621,10 +2621,24 @@ bool LoadBlockIndex(bool fAllowNew)
         block.hashPrevBlock = 0;
         block.hashMerkleRoot = block.BuildMerkleTree();
         block.nVersion = 1;
-        block.nTime    = 1422697506;
+        block.nTime    = 1423149543;
         block.nBits    = bnProofOfWorkLimit.GetCompact();
-        block.nNonce   = 210962;
+        block.nNonce   = 113831;
+        if (true  && (block.GetHash() != hashGenesisBlock)) {
 
+        // This will figure out a valid hash and Nonce if you're
+        // creating a different genesis block:
+            uint256 hashTarget = CBigNum().SetCompact(block.nBits).getuint256();
+            while (block.GetHash() > hashTarget)
+               {
+                   ++block.nNonce;
+                   if (block.nNonce == 0)
+                   {
+                       printf("NONCE WRAPPED, incrementing time");
+                       ++block.nTime;
+                   }
+               }
+        }
         //// debug print
         block.print();
         printf("block.GetHash() == %s\n", block.GetHash().ToString().c_str());
@@ -2632,7 +2646,7 @@ bool LoadBlockIndex(bool fAllowNew)
         printf("block.nTime = %u \n", block.nTime);
         printf("block.nNonce = %u \n", block.nNonce);
 
-        assert(block.hashMerkleRoot == uint256("a58b161893a06b77bb504b3d1fc1e3d62b4eed34756e151468d5d2c93c096787"));
+        assert(block.hashMerkleRoot == uint256("a32a8b2bc56977a64fcb72d46e6f283b3e2244f3394e495c157dc66729f58358"));
 		assert(block.GetHash() == (!fTestNet ? hashGenesisBlock : hashGenesisBlockTestNet));
 
         // Start new block file
