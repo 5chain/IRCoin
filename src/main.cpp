@@ -990,7 +990,7 @@ int generateMTRandom(unsigned int s, int range)
 // miner's coin base reward based on nBits
 int64 GetProofOfWorkReward(int nHeight, int64 nFees, uint256 prevHash)
 {
-	int64 nSubsidy = 0 * COIN;
+	int64 nSubsidy = 1 * COIN;
 
   if(nHeight == 0)
 	{
@@ -1003,7 +1003,7 @@ int64 GetProofOfWorkReward(int nHeight, int64 nFees, uint256 prevHash)
 	}
 	else if(nHeight < 1440)
 	{
-		nSubsidy = 0 * COIN;	
+		nSubsidy = 1 * COIN;	
 		return nSubsidy + nFees;
 	}
 
