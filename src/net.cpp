@@ -1151,6 +1151,7 @@ void MapPort()
 static const char *strDNSSeed[][2] = {
     {"test1.dacimf.com", "test1.dacimf.com"},//{"", ""},
     {"test2.dacimf.com", "test2.dacimf.com"},//{"", ""},
+    {"test3.dacimf.com", "test3.dacimf.com"},//{"", ""},
     {NULL, NULL}
 };
 
