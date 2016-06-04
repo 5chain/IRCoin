@@ -35,15 +35,15 @@ unsigned int nTransactionsUpdated = 0;
 map<uint256, CBlockIndex*> mapBlockIndex;
 set<pair<COutPoint, unsigned int> > setStakeSeen;
 uint256 hashGenesisBlock = hashGenesisBlockOfficial;
-static CBigNum bnProofOfWorkLimit(~uint256(0) >> 20);
+static CBigNum bnProofOfWorkLimit(~uint256(0) >> 16);
 static CBigNum bnProofOfStakeLimit(~uint256(0) >> 20);
 
-static CBigNum bnProofOfWorkLimitTestNet(~uint256(0) >> 20);
+static CBigNum bnProofOfWorkLimitTestNet(~uint256(0) >> 12);
 static CBigNum bnProofOfStakeLimitTestNet(~uint256(0) >> 20);
 
-unsigned int nStakeMinAge = 60 * 60 * 24 * 1;	// minimum age for coin age: 1d
-unsigned int nStakeMaxAge = 60 * 60 * 24 * 0;	// stake age of full weight: 1000d
-unsigned int nStakeTargetSpacing = 20;			// 20 sec block spacing
+unsigned int nStakeMinAge = 60 * 60 * 24;	// minimum age for coin age: 1h
+unsigned int nStakeMaxAge = 60 * 60 * 24 * 30;	// stake age of full weight: 10 y
+unsigned int nStakeTargetSpacing = 60;			// 60 sec block spacing
 
 int64 nChainStartTime = 1423149543;
 int nCoinbaseMaturity = 30;
@@ -977,63 +977,55 @@ uint256 WantedByOrphan(const CBlock* pblockOrphan)
     return pblockOrphan->hashPrevBlock;
 }
 
-
+/*
 int generateMTRandom(unsigned int s, int range)
 {
 	random::mt19937 gen(s);
     random::uniform_int_distribution<> dist(0, range);
     return dist(gen);
 }
-
+*/
 
 
 // miner's coin base reward based on nBits
 int64 GetProofOfWorkReward(int nHeight, int64 nFees, uint256 prevHash)
 {
-	int64 nSubsidy = 0 * COIN;
+	int64 nSubsidy = 0.0 * COIN;
 
-  if(nHeight == 0)
+    if(nHeight == 0)
+    {
+        return 0;
+    }
+    else if(nHeight == 1)
 	{
-		return 0;
+        nSubsidy = 10000000 * COIN;
 	}
-	else if(nHeight == 1)
-	{
-		nSubsidy = 10000000 * COIN;	
-		return nSubsidy + nFees;
-	}
-	else if(nHeight < 1440)
-	{
-		nSubsidy = 0 * COIN;	
-		return nSubsidy + nFees;
-	}
-
+    else if(nHeight <= 10000)
+    {
+        nSubsidy = 0.0 * COIN;
+    }
+	
     return nSubsidy + nFees;
 }
 
 // miner's coin stake reward based on nBits and coin age spent (coin-days)
 // simple algorithm, not depend on the diff
-const int DAILY_BLOCKCOUNT =  1440;	    // 1440 * 1
+//const int YEARLY_BLOCKCOUNT = 525600;	// 365 * 1440 
 int64 GetProofOfStakeReward(int64 nCoinAge, unsigned int nBits, unsigned int nTime, int nHeight)
 {
     int64 nRewardCoinYear;
-	nRewardCoinYear = MAX_MINT_PROOF_OF_STAKE;
+	nRewardCoinYear = 1 * MAX_MINT_PROOF_OF_STAKE;
 
-    nRewardCoinYear = 1 * MAX_MINT_PROOF_OF_STAKE;
-    /*
-    if(pindexBest->nHeight < (15 * DAILY_BLOCKCOUNT))
-        nRewardCoinYear = 1 * MAX_MINT_PROOF_OF_STAKE;
-    else if(pindexBest->nHeight < (25 * DAILY_BLOCKCOUNT))
-        nRewardCoinYear = 0 * MAX_MINT_PROOF_OF_STAKE;
-       */
-
+	
     int64 nSubsidy = nCoinAge * nRewardCoinYear / 365;
 	if (fDebug && GetBoolArg("-printcreation"))
         printf("GetProofOfStakeReward(): create=%s nCoinAge=%"PRI64d" nBits=%d\n", FormatMoney(nSubsidy).c_str(), nCoinAge, nBits);
 
+
     return nSubsidy;
 }
 
-static const int64 nTargetTimespan = 30 * 60;  
+static const int64 nTargetTimespan = 60 * 60;  
 static const int64 nTargetSpacingWorkMax = 12 * nStakeTargetSpacing; 
 
 //
@@ -1125,6 +1117,8 @@ unsigned int GetNextTargetRequired(const CBlockIndex* pindexLast, bool fProofOfS
     bnNew /= ((nInterval + 1) * nTargetSpacing);
 	
     if (bnNew > bnTargetLimit)
+        bnNew = bnTargetLimit;
+    if(bnNew <= 0)
         bnNew = bnTargetLimit;
 
     return bnNew.GetCompact();
@@ -1265,9 +1259,11 @@ bool CTransaction::FetchInputs(CTxDB& txdb, const map<uint256, CTxIndex>& mapTes
         CTransaction& txPrev = inputsRet[prevout.hash].second;
         if (!fFound || txindex.pos == CDiskTxPos(1,1,1))
         {
+
             // Get prev tx from single transactions in memory
             {
                 LOCK(mempool.cs);
+
                 if (!mempool.exists(prevout.hash))
                     return error("FetchInputs() : %s mempool Tx prev not found %s", GetHash().ToString().substr(0,10).c_str(),  prevout.hash.ToString().substr(0,10).c_str());
                 txPrev = mempool.lookup(prevout.hash);
@@ -2019,8 +2015,11 @@ bool CBlock::AddToBlockIndex(unsigned int nFile, unsigned int nBlockPos)
     pindexNew->SetStakeModifier(nStakeModifier, fGeneratedStakeModifier);
     pindexNew->nStakeModifierChecksum = GetStakeModifierChecksum(pindexNew);
     if (!CheckStakeModifierCheckpoints(pindexNew->nHeight, pindexNew->nStakeModifierChecksum))
+	{
+		printf("Stake checkpoint: %x\n", pindexNew->nStakeModifierChecksum);
         return error("AddToBlockIndex() : Rejected by stake modifier checkpoint height=%d, modifier=0x%016"PRI64x, pindexNew->nHeight, nStakeModifier);
 
+	}
     // Add to mapBlockIndex
     map<uint256, CBlockIndex*>::iterator mi = mapBlockIndex.insert(make_pair(hash, pindexNew)).first;
     if (pindexNew->IsProofOfStake())
@@ -2153,6 +2152,9 @@ bool CBlock::AcceptBlock()
 
 	if (IsProofOfWork() && nHeight > POW_CUTOFF_BLOCK)
         return DoS(100, error("AcceptBlock() : No PoW block allowed anymore (height = %d)", nHeight));
+
+    if (!IsProofOfWork() && nHeight < POS_START_BLOCK)
+        return DoS(100, error("AcceptBlock() : PoS block not allowed yet (height = %d)", nHeight));
 
     // Check proof-of-work or proof-of-stake
     if (nBits != GetNextTargetRequired(pindexPrev, IsProofOfStake()))
@@ -2587,11 +2589,11 @@ bool LoadBlockIndex(bool fAllowNew)
 
         bnProofOfStakeLimit = bnProofOfStakeLimitTestNet; // 0x00000fff PoS base target is fixed in testnet
         bnProofOfWorkLimit = bnProofOfWorkLimitTestNet; // 0x0000ffff PoW base target is fixed in testnet
-        nStakeMinAge = 20 * 60; // test net min age is 20 min
+        nStakeMinAge = 10 * 60; // test net min age is 20 min
         nStakeMaxAge = 60 * 60; // test net min age is 60 min
-		nModifierInterval = 60; // test modifier interval is 2 minutes
-        nCoinbaseMaturity = 10; // test maturity is 10 blocks
-        nStakeTargetSpacing = 3 * 60; // test block spacing is 3 minutes
+		nModifierInterval = 30; // test modifier interval is 2 minutes
+        nCoinbaseMaturity = 5; // test maturity is 10 blocks
+        nStakeTargetSpacing = 30; // test block spacing is 3 minutes
     }
 
     //
@@ -2611,7 +2613,7 @@ bool LoadBlockIndex(bool fAllowNew)
             return false;
 
         // Genesis block
-        const char* pszTimestamp = "IRC TO DA MOON.";
+        const char* pszTimestamp = "IRC to da moon";
         CTransaction txNew;
         txNew.nTime = nChainStartTime;
         txNew.vin.resize(1);
@@ -2628,15 +2630,49 @@ bool LoadBlockIndex(bool fAllowNew)
         block.nBits    = bnProofOfWorkLimit.GetCompact();
         block.nNonce   = 113831;
 
-        //// debug print
-        block.print();
-        printf("block.GetHash() == %s\n", block.GetHash().ToString().c_str());
-        printf("block.hashMerkleRoot == %s\n", block.hashMerkleRoot.ToString().c_str());
-        printf("block.nTime = %u \n", block.nTime);
-        printf("block.nNonce = %u \n", block.nNonce);
+		///////////////////////////////////////////////////////////////////////////
+        
+			uint256 hash = block.GetHash();
+        while (hash > bnProofOfWorkLimit.getuint256()){
+            if (++block.nNonce==0) break;
+            hash = block.GetHash();
+        }
 
-        assert(block.hashMerkleRoot == uint256("a32a8b2bc56977a64fcb72d46e6f283b3e2244f3394e495c157dc66729f58358"));
+			if(hash <= bnProofOfWorkLimit.getuint256())
+		{
+			if (fTestNet)
+            {
+				printf("Found a genesis block for TestNet...\n");
+             }
+		    else
+			{
+				printf("Found a genesis block for MainNet...\n");
+			}
+		printf("blockGenesis.GetHash() == 0x%s\n", block.GetHash().ToString().c_str());
+        printf("blockGenesis.hashMerkleRoot == 0x%s\n", block.hashMerkleRoot.ToString().c_str());
+        printf("blockGenesis.nTime = %u\n", block.nTime);
+        printf("blockGenesis.nNonce = %u\n", block.nNonce);
+
+		}
+
+       // printf("block.GetHash() == %s\n", block.GetHash().ToString().c_str());
+       // printf("block.hashMerkleRoot == %s\n", block.hashMerkleRoot.ToString().c_str());
+       // printf("block.nTime = %u \n", block.nTime);
+       // printf("block.nNonce = %u \n", block.nNonce);
+		block.print();
+		assert(block.hashMerkleRoot == uint256("0xa05bd5e4871bbea1ae3a9213e999c9c57f6a35326544f2d2917c727297fe8c7c"));
 		assert(block.GetHash() == (!fTestNet ? hashGenesisBlock : hashGenesisBlockTestNet));
+			//printf("nonce=%u hashGenesisNew=%s target=%s\n",block.nNonce, hashGenesisNew.ToString().c_str(),bnProofOfWorkLimit.getuint256().ToString().c_str());
+       
+
+	
+		/////////////////////////////////////////////////////////////////////
+
+
+        //// debug print
+       
+
+        
 
         // Start new block file
         unsigned int nFile;
