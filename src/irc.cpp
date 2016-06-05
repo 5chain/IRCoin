@@ -2,7 +2,6 @@
 // Copyright (c) 2009-2012 The Bitcoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
-
 #include "irc.h"
 #include "net.h"
 #include "strlcpy.h"
@@ -302,16 +301,16 @@ void ThreadIRCSeed2(void* parg)
         }
 
         if (fTestNet) {
-            Send(hSocket, "JOIN #IRCoinTEST2\r");
-            Send(hSocket, "WHO #IRCoinTEST2\r");
+            Send(hSocket, "JOIN #MxicoinxxTEST2\r");
+            Send(hSocket, "WHO #MxicoinxxTEST2\r");
         } else {
-            // randomly join #IRCoin00-#IRCoin05
+            // randomly join #Mxicoin00-#Mxicoin05
             // int channel_number = GetRandInt(5);
 
             // Channel number is always 0 for initial release
             int channel_number = 0;
-            Send(hSocket, strprintf("JOIN #IRCoin%02d\r", channel_number).c_str());
-            Send(hSocket, strprintf("WHO #IRCoin%02d\r", channel_number).c_str());
+            Send(hSocket, strprintf("JOIN #Mxicoinzz%02d\r", channel_number).c_str());
+            Send(hSocket, strprintf("WHO #Mxicoinzz%02d\r", channel_number).c_str());
         }
 
         int64 nStart = GetTime();
